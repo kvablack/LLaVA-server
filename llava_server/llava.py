@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, List
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import numpy as np
@@ -12,6 +12,7 @@ DEFAULT_IMAGE_PATCH_TOKEN = "<im_patch>"
 DEFAULT_IM_START_TOKEN = "<im_start>"
 DEFAULT_IM_END_TOKEN = "<im_end>"
 
+MAX_TOKENS = 64
 
 PROMPT = "You are an assistant that is able to understand the visual content that the user provides. "
 "You answer questions about the visual content in a short and concise manner.\n###Human: "
@@ -66,7 +67,7 @@ def load_llava(params_path):
     @torch.inference_mode()
     def inference_fn(
         images: Iterable[Image.Image], queries: Iterable[Iterable[str]]
-    ) -> str:
+    ) -> List[List[str]]:
         assert len(images) == len(queries)
         assert np.all(len(queries[0]) == len(q) for q in queries)
 
@@ -116,7 +117,7 @@ def load_llava(params_path):
         output_ids = []
         key_values = initial_key_values
         finished = torch.zeros(input_ids.shape[0], dtype=torch.bool, device="cuda")
-        for i in range(50):
+        for i in range(MAX_TOKENS):
             out = model(input_ids=input_ids, use_cache=True, past_key_values=key_values)
             key_values = out.past_key_values
             next_tokens = torch.argmax(out.logits[:, -1], dim=-1)
