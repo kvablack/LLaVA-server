@@ -1,10 +1,12 @@
 from typing import Iterable, List
+from typing import Iterable, List
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 import numpy as np
 from llava.utils import disable_torch_init
 from transformers import CLIPImageProcessor
 from PIL import Image
+from llava.conversation import simple_conv_multimodal
 
 
 DEFAULT_IMAGE_TOKEN = "<image>"
@@ -14,9 +16,7 @@ DEFAULT_IM_END_TOKEN = "<im_end>"
 
 MAX_TOKENS = 64
 
-PROMPT = "You are an assistant that is able to understand the visual content that the user provides. "
-"You answer questions about the visual content in a short and concise manner.\n###Human: "
-
+PROMPT = simple_conv_multimodal.get_prompt() + "Human: "
 
 def load_llava(params_path):
     # load model
@@ -78,7 +78,7 @@ def load_llava(params_path):
         images = images.to("cuda", dtype=torch.float16)
 
         # first, get the activations for the image tokens
-        initial_prompts = [PROMPT + image_tokens + "\n" for _ in range(len(images))]
+        initial_prompts = [PROMPT + image_tokens + " " for _ in range(len(images))]
         initial_input_ids = tokenizer(
             initial_prompts, return_tensors="pt"
         ).input_ids.cuda()

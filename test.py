@@ -6,10 +6,10 @@ import glob
 import tqdm
 from concurrent.futures import ThreadPoolExecutor
 
-BATCH_SIZE = 4
+BATCH_SIZE = 18
 
 # paths = glob.glob(f"target_paired_images_new_toykitchen7/*.jpg") * 100
-paths = ["monkey.jpg"]
+paths = ["monkey.png"] * 100
 
 def f(_):
     for i in tqdm.tqdm(range(0, len(paths), BATCH_SIZE)):
@@ -27,28 +27,26 @@ def f(_):
             jpeg_data.append(buffer.getvalue())
 
             queries.append([
-                "What item is lying on the table?",
-                "What color is the table?",
-                "What is the robot arm doing?"
+                "What animal is in this image?",
             ])
-            answers.append(["a toy", "brown", "picking up a toy"])
+            answers.append(["a monkey is looking at the camera"])
             # texts.append(["What item is lying on the table?"])
 
         data = {"images": jpeg_data, "queries": queries, "answers": answers}
         data_bytes = pickle.dumps(data)
 
         # Send the JPEG data in an HTTP POST request to the server
-        url = "http://34.70.249.53:8085"
+        url = "http://127.0.0.1:8085"
         response = requests.post(url, data=data_bytes)
 
         # Print the response from the server
         response_data = pickle.loads(response.content)
 
-        for output, score in zip(response_data["outputs"], response_data["precision"]):
+        for output, score in zip(response_data["outputs"], response_data["recall"]):
             print(output)
             print(score)
             print("--")
 
-with ThreadPoolExecutor(max_workers=10) as executor:
-    for _ in executor.map(f, range(10)):
+with ThreadPoolExecutor(max_workers=8) as executor:
+    for _ in executor.map(f, range(8)):
         pass

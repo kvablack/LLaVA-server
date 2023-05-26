@@ -12,5 +12,6 @@ classifiers = [
 ]
 dependencies = [
     "llava @ git+https://github.com/haotian-liu/LLaVA.git@0818b7a9063a6f30e62d6aa763fadcd4e0d96c77",
-    "bert-score==0.3.13"
+    "bert-score==0.3.13",
+    "flask==20.1.0", "gunicorn==2.3.2"
 ]
